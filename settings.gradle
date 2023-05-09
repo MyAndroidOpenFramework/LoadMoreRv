@@ -1,0 +1,25 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "LoadMoreRv"
+include ':app'
+
+setBinding(new Binding([gradle: this, path: rootProject.projectDir.path + "\\"]))
+//引入工具库
+def projectPath = rootProject.projectDir.path + '\\' + 'import_common_lib.groovy'
+evaluate(new File(projectPath))
+
+//引入下拉加载更多库
+def projectPagingRvPath = rootProject.projectDir.path + '\\' + 'import_paging_rv_lib.groovy'
+evaluate(new File(projectPagingRvPath))
