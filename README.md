@@ -39,79 +39,118 @@
 
     </FrameLayout>
     ```
-* 2、继承 `PagingAdapter` 实现抽象方法
-    ```java
-    /**
-    * @author liujian
-    * @date 2023/3/9
-    */
-    public class LoadMoreSimpleAdapter extends PagingAdapter {
-        private int count = 20;
-
-        @Override
-        protected void onBindMyViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if (holder.getItemViewType() == CONTENT_ID) {
-                ContentViewHolder contentViewHolder = (ContentViewHolder) holder;
-                contentViewHolder.tv.setText(String.valueOf(position));
-            }
-        }
-
-        @Override
-        protected RecyclerView.ViewHolder onCreateContentViewHolder(ViewGroup parent) {
-            View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_item, parent, false);
-            itemView.getLayoutParams().height += Math.random() * 100;
-            return new ContentViewHolder(itemView);
-        }
-
-        @Override
-        protected RecyclerView.ViewHolder onCreateFootViewHolder(ViewGroup parent) {
-            View footerView = LayoutInflater.from(parent.getContext()).inflate(R.layout.load_more_footer, parent, false);
-            return new FooterViewHolder(footerView);
-        }
-
-        @Override
-        protected int getMyItemCount() {
-            return count;
-        }
-
-        public void newData() {
-            count += 10;
-            notifyDataSetChanged();
-        }
-
-        private class FooterViewHolder extends RecyclerView.ViewHolder {
-
-            public FooterViewHolder(@NonNull View itemView) {
-                super(itemView);
-            }
-        }
-
-        private class ContentViewHolder extends RecyclerView.ViewHolder {
-            private TextView tv;
-
-            public ContentViewHolder(@NonNull View itemView) {
-                super(itemView);
-                tv = itemView.findViewById(R.id.tv);
-            }
-        }
-    }
-    ```
+  * 2、继承 `PagingAdapter` 实现抽象方法
+      ```java
+      /**
+      * @author liujian
+      * @date 2023/3/9
+      */
+      public class LoadMoreSimpleAdapter extends PagingAdapter {
+          private int count = 20;
+          private boolean isLoadFinish;
+    
+          @Override
+          protected void onBindMyViewHolder(RecyclerView.ViewHolder holder, int position) {
+              if (holder.getItemViewType() == CONTENT_ID) {
+                  ContentViewHolder contentViewHolder = (ContentViewHolder) holder;
+                  contentViewHolder.tv.setText(String.valueOf(position));
+              }
+          }
+    
+          /**
+           * footer绑定，可以替换footer中的显示的文字，比如“正在加载...”、“全部数据加载完毕”。
+           *
+           * @param holder
+           * @param position
+           */
+          @Override
+          protected void onBindMyFooterViewHolder(RecyclerView.ViewHolder holder, int position) {
+              ProgressAndTextFooterView progressAndTextFooterView = (ProgressAndTextFooterView) holder.itemView;
+              if (isLoadFinish) {
+                  progressAndTextFooterView.setLoadFinish();
+              } else {
+                  progressAndTextFooterView.setLoading();
+              }
+          }
+    
+          /**
+           * 绑定开发者提供的数据
+           *
+           * @param parent
+           * @return
+           */
+          @Override
+          protected RecyclerView.ViewHolder onCreateContentViewHolder(ViewGroup parent) {
+              View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_item, parent, false);
+              itemView.getLayoutParams().height += Math.random() * 100;
+              return new ContentViewHolder(itemView);
+          }
+    
+          /**
+           * 开发者需要提供 footer显示view，框架中有一些简单内置样式。不过满足不了，开发者可以自己定义。
+           *
+           * @param parent
+           * @return
+           */
+          @Override
+          protected RecyclerView.ViewHolder onCreateFootViewHolder(ViewGroup parent) {
+              View footerView = ProgressAndTextFooterView.createViewWithParams(parent);
+              return new FooterViewHolder(footerView);
+          }
+    
+          @Override
+          protected int getMyItemCount() {
+              return count;
+          }
+    
+          public void newData() {
+              count += 10;
+              notifyDataSetChanged();
+          }
+    
+          private class FooterViewHolder extends RecyclerView.ViewHolder {
+    
+              public FooterViewHolder(@NonNull View itemView) {
+                  super(itemView);
+              }
+          }
+    
+          private class ContentViewHolder extends RecyclerView.ViewHolder {
+              private TextView tv;
+    
+              public ContentViewHolder(@NonNull View itemView) {
+                  super(itemView);
+                  tv = itemView.findViewById(R.id.tv);
+              }
+          }
+    
+          /**
+           * 全部数据加载完成。此时需要将 footer中的文案改为 “数据全部加载完成”等字样
+           */
+          @Override
+          public void onLoadFinish() {
+              isLoadFinish = true;
+              notifyItemChanged(getMyItemCount());
+          }
+      }
+      ```
 * 2、简单使用
-```java
-    mRv = findViewById(R.id.rv);
-    mRv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
-    simpleAdapter = new LoadMoreSimpleAdapter();
-    mRv.setAdapter(simpleAdapter);
-    mRv.setOnPagingCallBack(new PagingRvView.OnPagingCallBack() {
-        @Override
-        public void loadMore() {
-            mRv.getHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    simpleAdapter.newData();
-                    mRv.currentPageLoadOkPerNextPage();
-                }
-            }, 1000);
-        }
-    });
-```
+    ```java
+        mRv.setOnPagingCallBack(new PagingRvView.OnPagingCallBack() {
+            @Override
+            public void loadMore() {
+                mRv.getHandler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        simpleAdapter.newData();
+                        if (mPageNum < 5) {
+                            mRv.currentPageLoadOkPerNextPage();
+                        } else {
+                            mRv.loadFinish();
+                        }
+                        mPageNum++;
+                    }
+                }, 1000);
+            }
+        });
+    ```
