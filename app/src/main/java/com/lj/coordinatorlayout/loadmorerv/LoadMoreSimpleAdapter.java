@@ -17,6 +17,7 @@ import com.lj.paging.footer.ProgressAndTextFooterView;
  */
 public class LoadMoreSimpleAdapter extends PagingAdapter {
     private int count = 20;
+    private boolean isLoadFinish;
 
     @Override
     protected void onBindMyViewHolder(RecyclerView.ViewHolder holder, int position) {
@@ -26,11 +27,28 @@ public class LoadMoreSimpleAdapter extends PagingAdapter {
         }
     }
 
+    /**
+     * footer绑定，可以替换footer中的显示的文字，比如“正在加载...”、“全部数据加载完毕”。
+     *
+     * @param holder
+     * @param position
+     */
     @Override
     protected void onBindMyFooterViewHolder(RecyclerView.ViewHolder holder, int position) {
-
+        ProgressAndTextFooterView progressAndTextFooterView = (ProgressAndTextFooterView) holder.itemView;
+        if (isLoadFinish) {
+            progressAndTextFooterView.setLoadFinish();
+        } else {
+            progressAndTextFooterView.setLoading();
+        }
     }
 
+    /**
+     * 绑定开发者提供的数据
+     *
+     * @param parent
+     * @return
+     */
     @Override
     protected RecyclerView.ViewHolder onCreateContentViewHolder(ViewGroup parent) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_item, parent, false);
@@ -38,6 +56,12 @@ public class LoadMoreSimpleAdapter extends PagingAdapter {
         return new ContentViewHolder(itemView);
     }
 
+    /**
+     * 开发者需要提供 footer显示view，框架中有一些简单内置样式。不过满足不了，开发者可以自己定义。
+     *
+     * @param parent
+     * @return
+     */
     @Override
     protected RecyclerView.ViewHolder onCreateFootViewHolder(ViewGroup parent) {
         View footerView = ProgressAndTextFooterView.createViewWithParams(parent);
@@ -70,8 +94,12 @@ public class LoadMoreSimpleAdapter extends PagingAdapter {
         }
     }
 
+    /**
+     * 全部数据加载完成。此时需要将 footer中的文案改为 “数据全部加载完成”等字样
+     */
     @Override
     public void onLoadFinish() {
-
+        isLoadFinish = true;
+        notifyItemChanged(getMyItemCount());
     }
 }

@@ -13,6 +13,7 @@ import com.lj.paging.PagingRvView;
 public class MainActivity extends AppCompatActivity {
     private PagingRvView mRv;
     private LoadMoreSimpleAdapter simpleAdapter;
+    private int mPageNum = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
         mRv.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
         simpleAdapter = new LoadMoreSimpleAdapter();
         mRv.setAdapter(simpleAdapter);
+        // 模拟 5 页之后，加载完成
         mRv.setOnPagingCallBack(new PagingRvView.OnPagingCallBack() {
             @Override
             public void loadMore() {
@@ -29,7 +31,12 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         simpleAdapter.newData();
-                        mRv.currentPageLoadOkPerNextPage();
+                        if (mPageNum < 5) {
+                            mRv.currentPageLoadOkPerNextPage();
+                        } else {
+                            mRv.loadFinish();
+                        }
+                        mPageNum++;
                     }
                 }, 1000);
             }
