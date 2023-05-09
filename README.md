@@ -1,8 +1,9 @@
 # LoadMoreRv
+> 本项目是一个demo项目，旨在提供一个可以运行的简单demo，真正的库使用的库是  [库项目](https://gitee.com/lj-framework-java/paging-rv)
 上拉加载更多框架，超级简单实用，非常方便二次开发，随心所欲修改适配自己的项目，代码量很少哦
 
 > 适用于 RecyclerView提供的三种布局管理器
->使用 RecyclerView 为基础做的分页控件 [项目地址](https://gitee.com/lj-framework-java/paging-rv)
+>使用 RecyclerView 为基础做的分页控件 [库项目](https://gitee.com/lj-framework-java/paging-rv)
 ## 1、使用指南
 ### 1.1、引入
 * 通过源码方式引入
