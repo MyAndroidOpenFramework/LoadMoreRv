@@ -20,11 +20,21 @@ public class LoadMoreSimpleAdapter extends PagingAdapter {
     private boolean isLoadFinish;
 
     @Override
-    protected void onBindMyViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (holder.getItemViewType() == CONTENT_ID) {
-            ContentViewHolder contentViewHolder = (ContentViewHolder) holder;
-            contentViewHolder.tv.setText(String.valueOf(position));
+    public int getItemViewType(int position) {
+        if (position < getMyItemCount() - 1) {
+            if (position % 2 == 0) {
+                return 1;
+            } else {
+                return 2;
+            }
         }
+        return super.getItemViewType(position);
+    }
+
+    @Override
+    protected void onBindMyViewHolder(RecyclerView.ViewHolder holder, int position) {
+        ContentViewHolder contentViewHolder = (ContentViewHolder) holder;
+        contentViewHolder.tv.setText(String.valueOf(position));
     }
 
     /**
@@ -50,11 +60,14 @@ public class LoadMoreSimpleAdapter extends PagingAdapter {
      * @return
      */
     @Override
-    protected RecyclerView.ViewHolder onCreateContentViewHolder(ViewGroup parent) {
+    protected RecyclerView.ViewHolder onCreateContentViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_item, parent, false);
-        itemView.getLayoutParams().height += Math.random() * 100;
+        if (viewType == 1) {
+            itemView.getLayoutParams().height += 150;
+        }
         return new ContentViewHolder(itemView);
     }
+
 
     /**
      * 开发者需要提供 footer显示view，框架中有一些简单内置样式。不过满足不了，开发者可以自己定义。
@@ -63,7 +76,7 @@ public class LoadMoreSimpleAdapter extends PagingAdapter {
      * @return
      */
     @Override
-    protected RecyclerView.ViewHolder onCreateFootViewHolder(ViewGroup parent) {
+    protected RecyclerView.ViewHolder onCreateFootViewHolder(ViewGroup parent, int viewType) {
         View footerView = ProgressAndTextFooterView.createViewWithParams(parent);
         return new FooterViewHolder(footerView);
     }
